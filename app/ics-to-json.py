@@ -15,26 +15,37 @@ with open(input_file, "rb") as f:
 events = []
 
 for event in cal.events:
-    title = event.get("SUMMARY")
-    start = event.get("DTSTART").dt.isoformat()
-    end = event.get("DTEND").dt.isoformat()
-    attendee = event.get("ATTENDEE")
-    location = event.get("LOCATION")
     
     new_event = {
-        "title": title,
-        "start": start,
-        "end": end,
-        "attendees": attendee,
-        "location": location
+        "title": event.get("SUMMARY"),
+        "start": event.get("DTSTART").dt.isoformat(),
+        "end": event.get("DTEND").dt.isoformat(),
+        "attendees": event.get("ATTENDEE"),
+        "location": event.get("LOCATION")
         }
     
-    # Remove empty values    
     new_event = {key: value for key, value in new_event.items() if value is not None}
+            
+    rrule = event.get("RRULE")
     
+    if rrule:
+        
+        repeat = {
+        "freq": rrule.get("FREQ", [None])[0],
+        "interval": int(rrule.get("INTERVAL", [1])[0]),
+        "byday": rrule.get("BYDAY", []),
+        }
+        
+        until = rrule.get("UNTIL")
+        if until:
+            repeat["until"] = until[0].isoformat()
+        
+        repeat = {key: value for key, value in repeat.items() if value is not None}
+        
+        new_event["repeat"] = repeat
+
     events.append(new_event)
     
-
 events.sort(key=lambda e: e["start"])
 
 with open(output_file, "w") as f:

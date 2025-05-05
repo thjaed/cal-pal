@@ -172,3 +172,6 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+app/example_cal.ics
+app/example_cal.json
+pico/typings
