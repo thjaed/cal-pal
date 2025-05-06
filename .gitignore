@@ -175,3 +175,4 @@ cython_debug/
 app/example_cal.ics
 app/example_cal.json
 pico/typings
+pico/pymakr.conf
