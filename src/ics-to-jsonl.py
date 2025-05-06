@@ -49,6 +49,8 @@ for event in cal.events:
 events.sort(key=lambda e: e["start"])
 
 with open(output_file, "w") as f:
-    json.dump(events, f, indent=2)
+    for event in events:
+        json.dump(event, f)
+        f.write("\n")
     
 print(f"Converted {len(events)} events in {round(time.time() - start_time, 4)} seconds")
