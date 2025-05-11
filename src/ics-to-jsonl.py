@@ -7,7 +7,6 @@ import time
 start_time = time.time()
 
 input_file = sys.argv[1]
-output_file = sys.argv[2]
 
 with open(input_file, "rb") as f:
     cal = Calendar.from_ical(f.read())
@@ -18,8 +17,8 @@ for event in cal.events:
     
     new_event = {
         "title": event.get("SUMMARY"),
-        "start": event.get("DTSTART").dt.isoformat(),
-        "end": event.get("DTEND").dt.isoformat(),
+        "start": int(event.get("DTSTART").dt.timestamp()),
+        "end": int(event.get("DTEND").dt.timestamp()),
         "attendees": event.get("ATTENDEE"),
         "location": event.get("LOCATION")
         }
@@ -37,8 +36,11 @@ for event in cal.events:
         }
         
         until = rrule.get("UNTIL")
-        if until:
-            repeat["until"] = until[0].isoformat()
+        if isinstance(until, list):
+            repeat["until"] = int(until[0].timestamp())
+        else:
+            repeat["until"] = int(until.dt.timestamp())
+
         
         repeat = {key: value for key, value in repeat.items() if value is not None}
         
@@ -48,7 +50,7 @@ for event in cal.events:
     
 events.sort(key=lambda e: e["start"])
 
-with open(output_file, "w") as f:
+with open("calendar.jsonl", "w") as f:
     for event in events:
         json.dump(event, f)
         f.write("\n")

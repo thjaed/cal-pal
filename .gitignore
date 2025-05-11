@@ -174,3 +174,7 @@ cython_debug/
 .pypirc
 .DS_Store
 src/temp
+src/pico/.vscode
+src/pico/.micropico
+src/pico/calendar.jsonl
+src/pico/cal_today.jsonl

@@ -1,0 +1,4 @@
+{"title": "Event 1", "start": 1746949500, "end": 1746953100, "location": "G100"}
+{"title": "Event 2", "start": 1746955800, "end": 1746959400, "location": "G100"}
+{"title": "Event 3", "start": 1746963000, "end": 1746966600, "location": "G100"}
+{"title": "Event not today", "start": 1747044900, "end": 1747048500, "location": "G200"}
