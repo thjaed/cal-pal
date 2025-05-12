@@ -178,3 +178,4 @@ src/pico/.vscode
 src/pico/.micropico
 src/pico/calendar.jsonl
 src/pico/cal_today.jsonl
+calendar.jsonl
