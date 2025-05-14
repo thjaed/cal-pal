@@ -10,8 +10,8 @@ def gen_cal_day(secs):
     todays_events = []
 
     with open("calendar.jsonl", "r") as f:
-        for event in f:
-            event = eval(event)
+        for line in f:
+            event = ujson.loads(line)
             start_sec = event.get("start")
 
             if (start_sec >= day_start_sec) and (start_sec <= day_end_sec):

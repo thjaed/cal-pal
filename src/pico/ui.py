@@ -10,6 +10,8 @@ class UI:
         self.DARK_GREY = self.display.create_pen(60, 60, 60)
         self.BLACK = self.display.create_pen(0, 0, 0)
         self.GREEN = self.display.create_pen(0, 255, 0)   
+        
+        self.scroll = 0
     
     def clear(self):
         self.display.set_backlight(0.8)
@@ -44,7 +46,7 @@ class UI:
         self.display.rectangle(293, 5, (round((battery_level / 100) * 19)), 4) # Charge level
     
     def draw_event_box(self, index, title, time, location, attendees):
-            y_offset = 16 + (index * 75)
+            y_offset = 16 + (index * 75) + self.scroll
 
             self.display.set_pen(self.GREY)
             self.display.rectangle(0, y_offset, 320, 75) # Event box
@@ -58,3 +60,7 @@ class UI:
     
     def update(self):
         self.display.update()
+    
+    def clear_event_area(self):
+        self.display.set_pen(self.BLACK)
+        self.display.rectangle(0, 16, 320, 224)
