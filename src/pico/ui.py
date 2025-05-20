@@ -51,7 +51,7 @@ class MenuBar:
         display.rectangle(315, 4, 2, 6) # Notch
         display.set_pen(GREY)
         display.rectangle(292, 4, 21, 6) # Grey background
-        if battery.charging:
+        if battery.charging():
             display.set_pen(GREEN) # Battery icon green if charging
         else:
             display.set_pen(WHITE)

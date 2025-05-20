@@ -17,7 +17,6 @@ def press_handler(btn, pattern):
     if pattern == Button.SINGLE_PRESS:
         if btn.get_id() == BUTTON_A:
             if ui.page == "menu":
-                global menu_selected
                 menu.exec() # Run the code associated with the button
 
         if btn.get_id() == BUTTON_B:
