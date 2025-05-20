@@ -195,5 +195,14 @@ class Menu:
             if self.selected < len(self.entries) - 1:
                 self.selected += 1
                 self.draw()
-                
+    
+    def exec(self):
+        name = self.entries[self.selected]
+        if name == "Generate Calendar Day":
+            time = utime.time()
+            calendar.gen_cal_day(time)
+        home.go()
+
+home = Home()
 bar = MenuBar()
+menu = Menu()

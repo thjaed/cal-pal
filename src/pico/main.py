@@ -13,21 +13,12 @@ fps = 30
 sleep_time = int((1/fps) * 1000) # Calculates time to sleep in ms
 ui.setup()
 
-def menu_exec(name):
-    # Matches name of button
-    if name == "Generate Calendar Day":
-        print("Generating Calendar Day")
-        time = utime.time()
-        calendar.gen_cal_day(time)
-    home.go()
-
-
 def press_handler(btn, pattern):
     if pattern == Button.SINGLE_PRESS:
         if btn.get_id() == BUTTON_A:
             if ui.page == "menu":
                 global menu_selected
-                menu_exec(menu.entries[menu.selected]) # Run the code associated with the button
+                menu.exec() # Run the code associated with the button
 
         if btn.get_id() == BUTTON_B:
             if ui.page == "home": # Go to menu page
