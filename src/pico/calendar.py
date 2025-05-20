@@ -1,7 +1,7 @@
 import utime
 import ujson
 
-def gen_cal_day(secs):
+def gen_cal_day(secs): # Generates a cal_today.jsonl file containing events for the day given
     current_time = utime.localtime(secs)
 
     day_start_sec = utime.mktime((current_time[0], current_time[1], current_time[2], 0, 0, 0, current_time[6], current_time[7]))
@@ -14,7 +14,7 @@ def gen_cal_day(secs):
             event = ujson.loads(line)
             start_sec = event.get("start")
 
-            if (start_sec >= day_start_sec) and (start_sec <= day_end_sec):
+            if (start_sec >= day_start_sec) and (start_sec <= day_end_sec): # If today
                 todays_events.append(event)
 
     with open("cal_today.jsonl", "w") as f:
@@ -26,7 +26,7 @@ def gen_cal_day(secs):
 months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
 days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
-def get_clock(secs):
+def get_clock(secs): # Returns a clock string from timestamp
     time = utime.localtime(secs)
     
     # gets hour and minuite from time
@@ -36,7 +36,7 @@ def get_clock(secs):
     
     return f"{hour}:{minute}"
 
-def get_date(secs):
+def get_date(secs): # Returns a date string from timestamp
     time = utime.localtime(secs)
     
     day = days[time[6]]

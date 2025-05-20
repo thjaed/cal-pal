@@ -19,16 +19,13 @@ for event in cal.events:
         "title": event.get("SUMMARY"),
         "start": int(event.get("DTSTART").dt.timestamp()),
         "end": int(event.get("DTEND").dt.timestamp()),
-        "attendees": event.get("ATTENDEE"),
         "location": event.get("LOCATION")
         }
     
     new_event = {key: value for key, value in new_event.items() if value is not None}
             
     rrule = event.get("RRULE")
-    
     if rrule:
-        
         repeat = {
         "freq": rrule.get("FREQ", [None])[0],
         "interval": int(rrule.get("INTERVAL", [1])[0]),
@@ -45,6 +42,15 @@ for event in cal.events:
         repeat = {key: value for key, value in repeat.items() if value is not None}
         
         new_event["repeat"] = repeat
+    
+    attendees = event.get("ATTENDEE")
+    if attendees:
+        if isinstance(attendees, list):
+            new_event["attendees"] = ", ".join(attendees)
+            print(new_event["attendees"])
+        else:
+            new_event["attendees"] = attendees
+    
 
     events.append(new_event)
     
