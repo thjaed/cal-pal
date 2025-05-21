@@ -5,7 +5,7 @@ import calendar
 import battery
 
 display = PicoGraphics(display=DISPLAY_PICO_DISPLAY_2, rotate=0)
-display.set_backlight(0.8)
+brightness = 0.8
 
 # Colours
 WHITE = display.create_pen(255, 255, 255)
@@ -17,11 +17,22 @@ GREEN = display.create_pen(0, 255, 0)
 def update():
     display.update()
     
+def set_brightness(level):
+    global brightness
+    display.set_backlight(level)
+    brightness = level
+
+def screen_off():
+    display.set_backlight(0)
+
+def screen_on():
+    display.set_backlight(brightness)
+    
 def setup():
     global page
     display.clear()
     display.set_font("bitmap6")
-    display.set_backlight(0.8)
+    display.set_backlight(brightness)
     page = "home"
 
 class MenuBar:
