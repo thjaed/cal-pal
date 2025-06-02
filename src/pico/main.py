@@ -1,14 +1,19 @@
 import asyncio
 import utime
+import ujson
+import os
 from pybuttons import Button
-from ui import Menu, MenuBar, Home
+from ui import Menu, MenuBar, Home, Message
 import ui
-import calendar
+from calendar import Calendar
 
 menu = Menu()
 bar = MenuBar()
 home = Home()
+message = Message()
+calendar = Calendar()
 
+cal_generated_today = False
 sleeping = False
 sleep_time = 20
 last_interaction_time = utime.time()
@@ -76,10 +81,27 @@ async def sleep_handler():
             device_to_sleep()
         await asyncio.sleep_ms(display_update_time)
 
+async def calendar_check():
+    while True:
+        if ui.page == "home" and not sleeping:
+            if calendar.update_calendar() or calendar.remove_past_events():
+                home.go()
+
+        await asyncio.sleep_ms(1000)
+   
+import machine
+rtc = machine.RTC()
+def dev_set_time():
+    inputsecs = int(input("Enter time to set: "))
+    if inputsecs > 0:
+        t = utime.localtime(inputsecs)
+        rtc.datetime((t[0], t[1], t[2], t[6]+1, t[3], t[4], t[5], 0))
+    
 async def main():
     asyncio.create_task(monitor_buttons())
     asyncio.create_task(update_menu_bar())
     asyncio.create_task(sleep_handler())
+    asyncio.create_task(calendar_check())
 
     while True:
         if not sleeping:
@@ -101,5 +123,8 @@ for pin in PINS:
        .on_press_for(press_handler, 700)  # 700ms = long press
     buttons.append(btn)
 
+dev_set_time()
+calendar.gen_cal_day(utime.time())
+calendar.remove_past_events()
 home.go()
 asyncio.run(main())

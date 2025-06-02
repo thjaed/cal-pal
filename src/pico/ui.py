@@ -1,8 +1,11 @@
 from picographics import PicoGraphics, DISPLAY_PICO_DISPLAY_2 # type: ignore
 import ujson
 import utime
-import calendar
+import os
+from calendar import Calendar
 import battery
+
+calendar = Calendar()
 
 display = PicoGraphics(display=DISPLAY_PICO_DISPLAY_2, rotate=0)
 brightness = 0.8
@@ -79,98 +82,118 @@ class Home:
         page = "home"
         display.set_pen(GREY)
         display.clear()
+        self.scroll_distance = 0
         self.draw()
         bar.draw()
     
     def draw(self):
-        with open("cal_today.jsonl", "r") as f: 
-            display.clear()
-            self.content_height = 0
-            self.box_heights = []
+        display.set_pen(GREY)
+        display.clear()
+        
+        cal_exists = "calendar.jsonl" in os.listdir()
+        cal_today_exists = "cal_today.jsonl" in os.listdir()
+        
+        if cal_today_exists:
+            with open("cal_today.jsonl", "r") as f:
+                valid_events = []
+                for line in f:
+                    try:
+                        event = ujson.loads(line)
+                        valid_events.append(event)
+                    except ValueError:
+                        pass  # Skip malformed lines
+        
+            if valid_events:
+                self.content_height = 0
+                self.box_heights = []
+
+                for event in valid_events:
+                    title=event.get("title")
+                    pretty_time=f"{calendar.get_clock(event.get('start'))} - {calendar.get_clock(event.get('end'))}"
+                    location=event.get("location")
+                    attendees=event.get("attendees")
+
+                    start_y = 15 + self.scroll_distance + self.content_height # Box start
+                    line_y = start_y # Text start
+
+                    box_height = 0
+
+                    # Increase box height for every line of text
+                    if title: box_height += 20
+                    if pretty_time: box_height += 14
+                    if location: box_height += 14
+                    if attendees: box_height += 14
+
+                    box_height += 2 # Padding
+                    self.box_heights.append(box_height)
+
+                    display.set_pen(GREY)
+                    display.rectangle(0, start_y, 320, box_height) # Event box
+                    display.set_pen(WHITE)
+                    display.line(0, box_height + line_y - 1, 320, box_height + line_y - 1) # Bottom bar
+
+                    # Text
+                    display.set_pen(WHITE)
+                    if title:
+                        display.text(title, 5, line_y, scale=3)
+                        line_y += 20
+                    if pretty_time:
+                        display.text(pretty_time, 5, line_y, scale=2)
+                        line_y += 14
+                    if location:
+                        display.text(location, 5, line_y, scale=2)
+                        line_y += 14
+                    if attendees:
+                        display.text(attendees, 5, line_y, scale=2)
+                        line_y += 14
+
+                    self.content_height += box_height
+                    
+            elif not cal_exists:
+                message.show("No Calendar File!", change_page=False)
+            elif cal_exists and not valid_events:
+                message.show("No Events Today", change_page=False)
             
-            for line in f:
-                event = ujson.loads(line) # Load event from current line
-                
-                title=event.get("title")
-                time=f"{calendar.get_clock(event.get('start'))} - {calendar.get_clock(event.get('end'))}"
-                location=event.get("location")
-                attendees=event.get("attendees")
-            
-                start_y = 15 + self.scroll_distance + self.content_height # Box start
-                line_y = start_y # Text start
-
-                box_height = 0
-
-                # Increase box height for every line of text
-                if title: box_height += 20
-                if time: box_height += 14
-                if location: box_height += 14
-                if attendees: box_height += 14
-
-                box_height += 2 # Padding
-                self.box_heights.append(box_height)
-
-                display.set_pen(GREY)
-                display.rectangle(0, start_y, 320, box_height) # Event box
-                display.set_pen(WHITE)
-                display.line(0, box_height + line_y - 1, 320, box_height + line_y - 1) # Bottom bar
-
-                # Text
-                display.set_pen(WHITE)
-                if title:
-                    display.text(title, 5, line_y, scale=3)
-                    line_y += 20
-                if time:
-                    display.text(time, 5, line_y, scale=2)
-                    line_y += 14
-                if location:
-                    display.text(location, 5, line_y, scale=2)
-                    line_y += 14
-                if attendees:
-                    display.text(attendees, 5, line_y, scale=2)
-                    line_y += 14
-
-                self.content_height += box_height
-            
-            bar.draw()
+        bar.draw()
     
     def scroll(self, direction):
         visible_height = 225
         scroll_offset = -self.scroll_distance # Scroll distance
         curr_height = 0
 
-        if direction == "down":
-            for box_height in self.box_heights:
-                # Set the top and bottom of the box
-                box_top = curr_height
-                box_bottom = curr_height + box_height
+        if self.content_height > 0:
+            if direction == "down":
+                for box_height in self.box_heights:
+                    # Set the top and bottom of the box
+                    box_top = curr_height
+                    box_bottom = curr_height + box_height
 
-                if box_bottom > scroll_offset + visible_height: # If the bottom of the box is off screen
-                    self.scroll_distance = -(box_bottom - visible_height) # Set the scroll distance to the difference between the bottom of the box and the bottom of the screen
-                    self.draw()
-                    return
+                    if box_bottom > scroll_offset + visible_height: # If the bottom of the box is off screen
+                        self.scroll_distance = -(box_bottom - visible_height) # Set the scroll distance to the difference between the bottom of the box and the bottom of the screen
+                        self.draw()
+                        return
 
-                curr_height += box_height # Move on to next box coords (y value)
+                    curr_height += box_height # Move on to next box coords (y value)
 
-        elif direction == "up":
-            for index, box_height in enumerate(self.box_heights):
-                # Set top of box
-                box_top = curr_height
+            elif direction == "up":
+                for index, box_height in enumerate(self.box_heights):
+                    # Set top of box
+                    box_top = curr_height
 
-                if box_top >= scroll_offset: # If the top of the box is off screen
-                    if index > 0: # If this is not the first box
-                        self.scroll_distance = -sum(self.box_heights[:index - 1]) # Scroll the distance of all the boxes after it
-                    else:
-                        # This is the first box so we scroll all the way to the top
-                        self.scroll_distance = 0
-                    self.draw()
-                    return
+                    if box_top >= scroll_offset: # If the top of the box is off screen
+                        if index > 0: # If this is not the first box
+                            self.scroll_distance = -sum(self.box_heights[:index - 1]) # Scroll the distance of all the boxes after it
+                        else:
+                            # This is the first box so we scroll all the way to the top
+                            self.scroll_distance = 0
+                        self.draw()
+                        return
 
-                curr_height += box_height # Move on to next box coords (y value)
+                    curr_height += box_height # Move on to next box coords (y value)
 
 class Menu:
     def __init__(self):
-        self.entries = ["Generate Calendar Day"]
+        self.entries = ["Generate Calendar Day", "Say Hello World"]
         self.selected = 0
         
     def go(self):
@@ -210,10 +233,32 @@ class Menu:
     def exec(self):
         name = self.entries[self.selected]
         if name == "Generate Calendar Day":
+            message.show("Please Wait", change_page=True)
             time = utime.time()
             calendar.gen_cal_day(time)
+            calendar.remove_past_events()
+        elif name == "Say Hello World":
+            print("Hello World!")
+            message.show("Hello World!", change_page=True)
+            utime.sleep_ms(1000)
         home.go()
 
+class Message:
+    def __init__(self):
+        self.text = ""
+    
+    def show(self, text, change_page):
+        global page
+        if change_page: page = "message"
+        display.set_pen(GREY)
+        display.clear()
+        display.set_font("bitmap6")
+        display.set_pen(WHITE)
+        text_width = display.measure_text(text, scale=2)
+        display.text(text, int((320 / 2) - (text_width / 2)), 108, scale=2)
+        display.update()
+
+message = Message()
 home = Home()
 bar = MenuBar()
 menu = Menu()
